@@ -2,6 +2,7 @@
 #import required libraries
 from flask import Flask,render_template,jsonify,request
 import pickle
+import sqlite3
 app = Flask(__name__)
 @app.route('/')
 def home():
@@ -21,17 +22,36 @@ def prediction():
         with open('model.pkl','rb') as model_file:
             mlmodel=pickle.load(model_file)
         res=mlmodel.predict([[float(nitro),float(phos),float(kp),float(temp),float(hum),float(ph),float(rain)]])
-        # print(res)
-        return render_template("result.html",res=res)
+        print(res)
+        conn=sqlite3.connect('cropdata.db')
+        cur=conn.cursor()
+        cur.execute(f''' insert into crop values({nitro},{phos},{kp},{temp},{hum},{ph},{rain},'{res[0]}')''')
+        conn.commit()
+        return render_template("result.html",res=res[0])
     else:
         return render_template('prediction.html')
-    
-    return render_template('prediction.html')
 
-@app.route('/showdata')
+
+@app.route('/showdata',methods = ['GET','POST'])
 def showdata():
-   return render_template('showdata.html')
+    conn = sqlite3.connect('Cropdata.db')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM CROP")
+    x = cur.fetchall()
+    li  = []
+    for i in x:
+        p = {}
+        p['Nitrogen'] = i[0]
+        p['Phosphorus'] = i[1]
+        p['Potassium'] = i[2]
+        p['Temperature'] = i[3]
+        p['Humidity'] = i[4]
+        p['Ph'] = i[5]
+        p['Rainfall'] = i[6]
+        p['Result'] = i[7]
+        li.append(p)
+    return render_template('showdata.html',data = li)
    
 
 if __name__=='__main__':
-    app.run()
+    app.run(host='0.0.0.0',port=5050)
