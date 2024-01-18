@@ -36,7 +36,7 @@ def prediction():
 def showdata():
     conn = sqlite3.connect('Cropdata.db')
     cur = conn.cursor()
-    cur.execute("SELECT * FROM CROP")
+    cur.execute("SELECT*FROM crop")
     x = cur.fetchall()
     li  = []
     for i in x:
@@ -54,4 +54,4 @@ def showdata():
    
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0',port=5050)
+    app.run(host='0.0.0.0',port=5010)
